@@ -1,0 +1,47 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "./erc20oo.sol"; //this erc20oo is the name of the file we're importing
+
+contract ERC20 is IERC20{  //ierc20 is the name of the interface we imported and erc20 is the name of the contract
+
+uint public override totalSupply;
+mapping(address => uint) public override balanceOf;
+mapping(address => mapping(address => uint)) public override allowance; //we're mapping the address of the owner with the address of the spender
+string public name ="Ada Token";
+string public symbol="ADT";
+uint public decimals = 18;
+
+function transfer(address recipient, uint amount) external override returns(bool){
+balanceOf[msg.sender] -= amount; //the balance of the sender and the amount to be deducted/transferred
+balanceOf[recipient] += amount; //basically, we deducted money from the sender and added it to the recipient
+emit Transfer(msg.sender, recipient, amount);
+return true;
+}
+
+function approve(address spender, uint amount) external override returns(bool){
+allowance[msg.sender][spender] = amount; //you the owner (msg.sender) is allowing the spender spend a particular amount from your account.
+emit Approval(msg.sender, spender, amount);
+return true;
+}
+
+function transferFrom(address sender, address recipient, uint amount) external override returns(bool){
+allowance[sender][msg.sender] -= amount; //the msg.sender is the person calling the transfer function
+balanceOf[sender] -= amount;
+balanceOf[recipient] += amount;
+emit Transfer(sender, recipient, amount);
+return true;
+}
+
+function mint(uint amount) external{ //the total supply is zero. there is no money in this contract, so we need to create money by calling the mint money
+balanceOf[msg.sender] += amount; //the balance of the person calling the mint function should increase by the total amount.
+totalSupply += amount; //i'm increasing the total supply by that same amount by that same
+emit Transfer(address(0), msg.sender, amount); // i'm emiting transfer. we normally transfer from one account to another, but this time, we're not transferring from any account. We're creating it. that's why the address is 0. and we're tranfering to msg.sender
+}
+
+function burn(uint amount)external{ //burn removes money
+    balanceOf[msg.sender] -= amount;
+    totalSupply -= amount;
+    emit Transfer(msg.sender, address(0), amount); //the burn function is coming from the msg.sender, and it is going no where, that's why the address is 0.
+} 
+}
